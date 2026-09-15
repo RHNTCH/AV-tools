@@ -1,0 +1,297 @@
+Да. Теперь задача уже не про чтение файла, а про **две отдельные операции**:
+
+1. Из строки `proj_path = "...\tnAES"` получить имя библиотеки `tnAES`.
+2. Рекурсивно пройти `dest_path` и найти каталог `tnAES` среди него и всех дочерних каталогов.
+
+И здесь в Zig 0.17 есть подходящий API: `std.Io.Dir.walk()`. В новой `std.Io` модели он используется примерно так:
+
+```zig
+var walker = try dir.walk(allocator);
+defer walker.deinit();
+
+while (try walker.next(io)) |entry| {
+    // ...
+}
+```
+
+Именно такой API указан в документации новой `std.Io.Dir`. ([Zig Programming Language][1])
+
+## 1. Сначала поправим разбор строки
+
+У тебя сейчас:
+
+```zig
+if (std.mem.eql(u8, line[0], "#")) continue;
+```
+
+Это неправильно, потому что `line[0]` — это **один `u8`**, а `"#"` — `[]const u8`.
+
+Нужно:
+
+```zig
+if (line.len > 0 and line[0] == '#')
+    continue;
+```
+
+Но для твоего конфига лучше вообще сначала проверить `proj_path`.
+
+Например:
+
+```zig
+if (!std.mem.startsWith(u8, line, "proj_path"))
+    continue;
+```
+
+Потом получаем путь:
+
+```text
+proj_path = "C:\Users\fedorov.dd\Documents\...\tnAES"
+```
+
+и нам нужен:
+
+```text
+tnAES
+```
+
+### Для Windows надо искать `\`, а не `/`
+
+Можно сделать:
+
+```zig
+const path_start = std.mem.lastIndexOfAny(u8, line, "\\/") orelse continue;
+```
+
+Но поскольку строка заканчивается кавычкой:
+
+```text
+...\tnAES"
+```
+
+сначала лучше убрать пробелы и кавычки.
+
+Например:
+
+```zig
+const value = std.mem.trim(u8, line["proj_path = ".len..], " \t\"");
+```
+
+Получим:
+
+```text
+C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SDKUStandart\tnAES
+```
+
+А затем:
+
+```zig
+const pos = std.mem.lastIndexOfAny(u8, value, "\\/") orelse continue;
+const lib_name = value[pos + 1 ..];
+```
+
+Получаем:
+
+```text
+tnAES
+```
+
+---
+
+# 2. Теперь рекурсивный поиск библиотеки
+
+Я бы вынес это в отдельную функцию:
+
+```zig
+fn findLibrary(
+    allocator: std.mem.Allocator,
+    dest_path: []const u8,
+    lib_name: []const u8,
+    io: std.Io,
+) !?[]const u8 {
+    var dir = try std.Io.Dir.cwd().openDir(io, dest_path, .{});
+    defer dir.close(io);
+
+    var walker = try dir.walk(allocator);
+    defer walker.deinit();
+
+    while (try walker.next(io)) |entry| {
+        if (entry.kind != .directory)
+            continue;
+
+        if (std.mem.eql(u8, entry.basename, lib_name)) {
+            return entry.path;
+        }
+    }
+
+    return null;
+}
+```
+
+Но здесь есть важный вопрос с ownership: `entry.path` принадлежит walker и не должен использоваться после `walker.deinit()`.
+
+Если тебе нужно **вернуть найденный путь наружу**, его нужно скопировать через allocator.
+
+Например:
+
+```zig
+fn findLibrary(
+    allocator: std.mem.Allocator,
+    dest_path: []const u8,
+    lib_name: []const u8,
+    io: std.Io,
+) !?[]u8 {
+    var dir = try std.Io.Dir.cwd().openDir(io, dest_path, .{});
+    defer dir.close(io);
+
+    var walker = try dir.walk(allocator);
+    defer walker.deinit();
+
+    while (try walker.next(io)) |entry| {
+        if (entry.kind != .directory)
+            continue;
+
+        if (std.mem.eql(u8, entry.basename, lib_name)) {
+            return try allocator.dupe(u8, entry.path);
+        }
+    }
+
+    return null;
+}
+```
+
+Тогда вызывающая сторона владеет результатом:
+
+```zig
+const found_path = try findLibrary(
+    allocator,
+    dest_path,
+    lib_name,
+    io,
+) orelse {
+    std.debug.print("Library not found: {s}\n", .{lib_name});
+    return;
+};
+
+defer allocator.free(found_path);
+
+std.debug.print("Found: {s}\n", .{found_path});
+```
+
+---
+
+# 3. Но я бы немного изменил архитектуру
+
+У тебя получается:
+
+```text
+config
+ │
+ ├── proj_path = "...\\tnAES"
+ ├── proj_path = "...\\tnCC"
+ └── proj_path = "...\\tnCST"
+             │
+             ▼
+         lib_name
+             │
+             ▼
+         dest_path
+             │
+             ▼
+       recursive walk
+             │
+       ┌─────┴─────┐
+       ▼           ▼
+     tnAES       tnCC
+       │
+       ▼
+    нашли
+```
+
+То есть `changePath()` фактически делает:
+
+```text
+прочитать config
+    ↓
+получить список библиотек
+    ↓
+для каждой библиотеки
+    ↓
+найти её под dest_path
+```
+
+Я бы поэтому разделил:
+
+```zig
+parseLibraryName()
+findLibrary()
+```
+
+а `changePath()` оставил координатором.
+
+Например:
+
+```zig
+const lib_name = try parseLibraryName(line);
+
+const found = try findLibrary(
+    allocator,
+    dest_path,
+    lib_name,
+    io,
+);
+```
+
+---
+
+## И ещё одна важная вещь в твоём текущем коде
+
+Вот это:
+
+```zig
+var line_len = line.len - 1;
+```
+
+опасно.
+
+Если `line.len == 0`, произойдёт underflow.
+
+А тебе вообще не нужно вручную идти назад по строке:
+
+```zig
+while (line_len != 0) : (line_len -= 1) {
+    if (line[line_len] == '/') {
+        ...
+    }
+}
+```
+
+В стандартной библиотеке есть:
+
+```zig
+std.mem.lastIndexOfAny()
+```
+
+Поэтому:
+
+```zig
+const pos = std.mem.lastIndexOfAny(u8, value, "\\/") orelse continue;
+const lib_name = value[pos + 1 ..];
+```
+
+гораздо лучше и особенно важно для Windows, потому что у тебя пути вида:
+
+```text
+C:\Users\...\tnAES
+```
+
+а не:
+
+```text
+C:/Users/.../tnAES
+```
+
+---
+
+Если хочешь, следующим шагом можем **прямо на твоём текущем `changePath.zig` написать рабочую реализацию целиком**: `config → proj_path → имя библиотеки → рекурсивный поиск в dest_path`, без лишних абстракций.
+
+[1]: https://ziglang.org/download/0.16.0/release-notes.html?utm_source=chatgpt.com "0.16.0 Release Notes ⚡ The Zig Programming Language"
