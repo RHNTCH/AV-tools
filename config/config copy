@@ -1,0 +1,346 @@
+[general]
+pvss_path = "C:\Siemens\Automation\WinCC_OA\3.17"
+
+#proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SDKUStandart\tnAES"
+proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SDKUStandart\tnCC"
+proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SDKUStandart\tnCST"
+proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SDKUStandart\tnDB"
+proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SDKUStandart\tnETM"
+proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SDKUStandart\tnHP"
+proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SDKUStandart\tnIS"
+proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SDKUStandart\tnKNP"
+proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SDKUStandart\tnMM"
+proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SDKUStandart\tnMOD"
+proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SDKUStandart\tnND"
+proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SDKUStandart\tnPA"
+proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SDKUStandart\tnRP"
+proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SDKUStandart\tnSTD"
+proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SDKUStandart\tnTG"
+proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SDKUStandart\tnTRD"
+proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SDKUStandart\tnUIC"
+proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SDKUStandart\tnWP"
+#proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SubOSTSubTools"
+#proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SubOSTSubCSPA"
+proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SubDIAG"
+proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SubDIAG-config"
+proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\CSPAStandart\CSDK"
+proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\CSPAStandart\msCSDK"
+#proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SubOSTSubPV"
+
+
+proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\projects_TNPV_full\TNPV1"
+proj_version = "3.17"
+
+
+langs = "ru_RU.utf8"
+langs = "en_US.utf8"
+lang = "ru_RU.utf8"
+
+distributed = 1
+
+event = "localhost:8777"
+data = "localhost:8778"
+
+maxBcmBufferSize = 1000000
+
+maxConnectMessageSize = 800
+pmonPort = 5002
+mxProxy = "none"
+MessageDiagSec = 1
+
+#maxPendings
+ctrlMaxPendings = 1000
+ctrlMaxBlockedPendings = 6000
+
+# Для независимого квитирования событий
+independentAlertAck = 1
+keepAckColorOnMultipleAck = 1
+
+# увеличиваем очередь для функций
+dpFuncLoopCount = 10000
+
+aliveTimeout = -2
+
+#NGA
+useNGA = 1
+useNGADirectRead = 1
+
+noReverseLookup = 1
+maxLogFileSize = 100
+#valueChangeTimeDiff = 59900
+#Рекомендации ТНТ
+valueChangeTimeDiff = 60
+
+[pmon]
+localAddress = ""
+
+[onlineBackup]
+autoOnlineBackup = 0
+backupPath = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\projects\backup\TNPV1"
+#Бэкап в 9:00
+backupSyncTime = 32400
+
+[ascii]
+multiUserMode = 0
+
+[event]
+msgQueueHoldTime = 5
+priorityClass = 2
+#fwdDpType = "_MD5_check."
+alertConditionLogic = 0
+alertConditionBit = "_bad"
+maxInputMsgCount = 1000000
+#maxParseTime = 200
+maxValueRequestCount = 6000000
+maxAlertRequestCount = 6000000
+#maxValueConnectCount = 0
+#validTimeDiff = 1000
+#negativeSourceTimeDiff = 59900
+
+#Event рекомендации ТНТ
+negativeSourceTimeDiff = 60
+validTimeDiff = 52560000
+#инстуркция по обновлению СДКУ-Стд 3.5.6.1
+attributesFromAddValues = 3
+
+[calcstate]
+useOfflineErrorstateInfo = 1
+
+[redu]
+linkUpDelayTime = 5
+delayChange = 1
+activeChangeInterval = 2
+
+[data]
+#размер в килобайтах
+#блоков для архивации
+numberOfDatapointsToCache = 1000
+#maxLinesInQuery = 10000000
+maxRequestLineCount = 0
+maxValueRequestCount = 0
+maxRequestMemSize = 0
+priorityClass = 2
+
+[dist]
+#messageCompressionThreshold = 1200
+#messageCompression = "zlib-bzip2"
+#рекомендации тнт 26.04.2022
+distPort = 10777
+distSystemIds = "39"
+#рекомендации тнт 30.01.2020
+maxUpdateMsgCount = 1
+
+[ui]
+#tnWP_configs
+activeColorScheme = "tnWP_disp"
+defaultPanelFormat = "XML"
+panelRefCacheOn = 1
+minZoomFactor = 0.1
+priorityClass = 2
+ctrlMaxWeight = 10000
+visionResizeMode = "FitToModule"
+checkChildPanelPos = 1
+pickRange = 1
+
+#tnTRD_configs
+trendGetDataTimeout = 0
+trendPseudoLineStyleLikeCurve = 1
+trendPseudoLineFillLikeCurve = 1
+trendEnableCurveRulers = 1
+trendStatusPattern = "_bad=1"  "magenta"  "[dotted, oneColor, JoinMiter, CapButt,  0]" "[hatch,[cross,10,left]]"
+trendDefaultPDFPrinter = "PDF24 Printer"
+
+#tnIS_configs
+reportISEvent = 0
+
+#tnUIC_configs
+maxWindowCount = 10
+fitToModuleMode = 1
+
+# Использование разного типа алармов для разных пользователей
+userDependingAlarms = 1
+
+# для получения фокуса модуля, для навигации
+sendModuleFocusDp = 1
+showInputFocus = 0
+
+# отключаем бак-файлы
+numPanelBakFiles = 0
+
+
+
+[ctrl_100]
+distributed = 0
+refuseCNS = 1
+
+[ctrl_101]
+distributed = 0
+refuseCNS = 1
+
+[ctrl_102]
+distributed = 0
+refuseCNS = 1
+
+[ctrl_103]
+distributed = 0
+
+[ctrl_104]
+refuseCNS = 1
+
+[ctrl_105]
+distributed = 0
+refuseCNS = 1
+
+[ctrl_106]
+distributed = 0
+refuseCNS = 1
+
+[ctrl_107]
+distributed = 0
+refuseCNS = 1
+
+[ctrl_108]
+distributed = 0
+refuseCNS = 1
+
+[ctrl_109]
+distributed = 0
+refuseCNS = 1
+
+[ctrl_110]
+distributed = 0
+refuseCNS = 1
+
+[ctrl_111]
+distributed = 0
+refuseCNS = 1
+
+[ctrl_112]
+distributed = 0
+refuseCNS = 1
+
+[ctrl_113]
+distributed = 0
+refuseCNS = 1
+
+[ctrl_114]
+distributed = 0
+refuseCNS = 1
+
+[ctrl_115]
+distributed = 0
+refuseCNS = 1
+
+[ctrl_117]
+distributed = 0
+refuseCNS = 1
+
+[ctrl_119]
+distributed = 0
+refuseCNS = 1
+
+[ctrl_122]
+distributed = 1
+refuseCNS = 1
+
+[ctrl_124]
+distributed = 1
+refuseCNS = 1
+
+[ctrl_125]
+distributed = 1
+refuseCNS = 1
+
+[ctrl_126]
+distributed = 1
+refuseCNS = 1
+
+[OPCSERVER]
+subscribeOnUse = 1
+STOPWITHLASTCLIENT = 0
+
+[ascii]
+commit = 10
+
+[iec]
+maxOutputQueueSize = 3000
+autoGQ = 3
+utcTimestamps = 1
+srcTimeDiffUserBits = "T2"
+srcTimeDiffResolution = 500
+
+#BAVLY_NPS
+[iec_11]
+timeout_t1 = 5
+timeout_t2 = 3
+timeout_t3 = 5
+max_k = 12
+max_w = 8
+
+#BUGUR_NPS_2
+[iec_14]
+max_k = 18
+max_w = 1
+
+#BOROD_1
+[iec_15]
+timeout_t1 = 5
+timeout_t2 = 3
+timeout_t3 = 5
+
+#BOROD_NPS_2
+[iec_16]
+timeout_t1 = 5
+timeout_t2 = 3
+timeout_t3 = 5
+
+#GRACH_NPS_2
+[iec_18]
+timeout_t1 = 5
+timeout_t2 = 3
+timeout_t3 = 5
+max_k = 18
+max_w = 1
+
+#SAM_NPS_2
+[iec_26]
+timeout_t1 = 5
+timeout_t2 = 3
+timeout_t3 = 5
+
+#SAM_1
+[iec_27]
+timeout_t1 = 5
+timeout_t2 = 3
+timeout_t3 = 5
+
+#SOVH_2
+[iec_28]
+timeout_t1 = 5
+timeout_t2 = 3
+timeout_t3 = 5
+
+#SOVH_NPS_3
+[iec_29]
+timeout_t1 = 5
+timeout_t2 = 3
+timeout_t3 = 5
+
+#SBSIPN_RP
+[iec_31]
+max_k = 18
+max_w = 1
+
+#LYUB_NPS
+[iec_34]
+timeout_t1 = 5
+timeout_t2 = 3
+timeout_t3 = 5
+max_k = 12
+max_w = 8
+
+#GRACH_NPS_3
+[iec_35]
+timeout_t1 = 5
+timeout_t2 = 3
+timeout_t3 = 5

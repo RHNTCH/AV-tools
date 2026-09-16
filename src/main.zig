@@ -9,7 +9,7 @@ pub fn main(init: std.process.Init) !void {
     const io = init.io;
 
     const args = try init.minimal.args.toSlice(arena);
-    argsProc.procArgs(args, io) catch |err| {
+    argsProc.procArgs(arena, args, io) catch |err| {
         std.debug.print("Error: {}\n", .{err});
         std.process.exit(1);
     };
