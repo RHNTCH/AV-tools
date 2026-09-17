@@ -8,6 +8,10 @@ const changePathErrors = error{
 };
 
 pub fn run(allocator: std.mem.Allocator, io: std.Io, args: []const []const u8) !void {
+    if (args.len == 0 or std.mem.eql(u8, args[0], "help")) {
+        printHelp();
+        return;
+    }
     if (args.len != 4) {
         printHelp();
         return changePathErrors.TooManyOrNotEnoughArguments;
