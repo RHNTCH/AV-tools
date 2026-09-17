@@ -1,5 +1,52 @@
 const std = @import("std");
-const ascii = std.ascii;
+
+const changePathErrors = error{
+    TooManyOrNotEnoughArguments,
+    InvalidArgumentSequence,
+    InvalidArgument,
+    InvalidParameters,
+};
+
+pub fn run(allocator: std.mem.Allocator, io: std.Io, args: []const []const u8) !void {
+    if (args.len != 4) {
+        printHelp();
+        return changePathErrors.TooManyOrNotEnoughArguments;
+    }
+
+    var conf_path: ?[]const u8 = null;
+    var libs_path: ?[]const u8 = null;
+
+    var i: usize = 0;
+
+    while (i < args.len) {
+        const arg = args[i];
+
+        if (i + 1 >= args.len) {
+            printHelp();
+            return changePathErrors.InvalidArgumentSequence;
+        }
+
+        const value = args[i + 1];
+
+        if (std.mem.eql(u8, arg, "-conf_path")) {
+            conf_path = value;
+        } else if (std.mem.eql(u8, arg, "-libs_path")) {
+            libs_path = value;
+        } else {
+            printHelp();
+            return changePathErrors.InvalidArgumentSequence;
+        }
+
+        i += 2;
+    }
+
+    if (conf_path == null or libs_path == null) {
+        printHelp();
+        return changePathErrors.InvalidParameters;
+    }
+
+    try changePath(allocator, conf_path.?, libs_path.?, io);
+}
 
 pub fn changePath(
     allocator: std.mem.Allocator,
@@ -7,10 +54,27 @@ pub fn changePath(
     dest_path: []const u8,
     io: std.Io,
 ) !void {
-    const libs = try parseLibraryNames(allocator, config_path, io);
-    for (libs) |lib| {
-        std.debug.print("LIB: [{s}]\n", .{lib});
+    const libs = try parseLibraryNames(
+        allocator,
+        config_path,
+        io,
+    );
 
+    var dir = try std.Io.Dir.cwd().openDir(io, config_path, .{
+        .iterate = true,
+    });
+    defer dir.close(io);
+
+    var file = try dir.createFile(io, "new_paths", .{});
+    defer file.close(io);
+
+    std.debug.print("Created file: \"new_paths\" in config's directory ({s})\n", .{config_path});
+
+    var buffer: [4096]u8 = undefined;
+    var file_writer = file.writer(io, &buffer);
+    var writer = &file_writer.interface;
+
+    for (libs) |lib| {
         const new_path = try findLibrary(
             allocator,
             dest_path,
@@ -18,11 +82,22 @@ pub fn changePath(
             io,
         );
 
-        std.debug.print("new_path: {?s}\n", .{new_path});
+        if (new_path) |path| {
+            try writer.print("proj_path = \"{s}\"\n", .{path});
+
+            std.debug.print("Added path for {s}.\n", .{lib});
+        } else {
+            std.debug.print("Path for {s} not found. Skipping.\n", .{lib});
+        }
     }
+    try writer.flush();
 }
 
-fn parseLibraryNames(allocator: std.mem.Allocator, config_path: []const u8, io: std.Io) ![][]const u8 {
+fn parseLibraryNames(
+    allocator: std.mem.Allocator,
+    config_path: []const u8,
+    io: std.Io,
+) ![][]const u8 {
     var dir = try std.Io.Dir.cwd().openDir(io, config_path, .{});
     defer dir.close(io);
 
@@ -34,8 +109,9 @@ fn parseLibraryNames(allocator: std.mem.Allocator, config_path: []const u8, io: 
     var lib_list = try std.ArrayList([]const u8).initCapacity(allocator, 4096);
 
     while (try reader.interface.takeDelimiter('\n')) |line| {
-        if (!std.mem.startsWith(u8, line, "proj_path")) continue;
-        if (line.len > 0 and line[0] == '#') continue;
+        if (!std.mem.startsWith(u8, line, "proj_path")) {
+            continue;
+        }
 
         var trimmed_line = std.mem.trim(u8, line, " =\t\"");
 
@@ -62,23 +138,24 @@ fn findLibrary(
     defer walker.deinit();
 
     while (try walker.next(io)) |entry| {
-        std.debug.print(
-            "ENTRY: kind={any}, basename=[{s}], path=[{s}]\n",
-            .{
-                entry.kind,
-                entry.basename,
-                entry.path,
-            },
-        );
-
         if (entry.kind != .directory)
             continue;
-        std.debug.print("lib_name bytes: {any}\n", .{lib_name});
-        std.debug.print("basename bytes: {any}\n", .{entry.basename});
+
         if (std.mem.eql(u8, entry.basename, lib_name)) {
-            return try allocator.dupe(u8, entry.path);
+            return try dir.realPathFileAlloc(
+                io,
+                entry.path,
+                allocator,
+            );
         }
     }
 
     return null;
+}
+
+fn printHelp() void {
+    std.debug.print("Usage:\n", .{});
+    std.debug.print(".\\AV_tools.exe changePath -conf_path <relative path to config directory> -lib_path <relative path to libs directory>\n", .{});
+    std.debug.print("Important: all paths have to be relative to the directory, where program starts.\n", .{});
+    std.debug.print("Also, program recoursivly visits all childish directories in libs_path\n", .{});
 }

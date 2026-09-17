@@ -1,5 +1,0 @@
-[general]
-pvss_path = "C:\Siemens\Automation\WinCC_OA\3.17"
-
-#proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SDKUStandart\tnAES"
-proj_path = "C:\Users\fedorov.dd\Documents\6177_SDKU\CSPA_dev\SDKU\SDKUStandart\tnCC"
