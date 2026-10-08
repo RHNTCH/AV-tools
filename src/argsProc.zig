@@ -34,6 +34,6 @@ pub fn procArgs(allocator: std.mem.Allocator, args: []const []const u8, io: std.
 fn printReference() void {
     std.debug.print("Usage:\n", .{});
     std.debug.print("AV-tools help\n", .{});
-    std.debug.print("AV-tools changePath -option1, -option2...\n\n", .{});
+    std.debug.print("AV-tools changePath -arg1, -arg2...\n\n", .{});
     std.debug.print("For additional information on specific function usage type:\n  AV-tools <function> help\n", .{});
 }

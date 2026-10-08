@@ -159,7 +159,7 @@ fn findLibrary(
 
 fn printHelp() void {
     std.debug.print("Usage:\n", .{});
-    std.debug.print(".\\AV_tools.exe changePath -conf_path <relative path to config directory> -lib_path <relative path to libs directory>\n", .{});
+    std.debug.print(".\\AV_tools.exe changePath -conf_path <relative path to config directory> -libs_path <relative path to libs directory>\n", .{});
     std.debug.print("Important: all paths have to be relative to the directory, where program starts.\n", .{});
     std.debug.print("Also, program recoursivly visits all childish directories in libs_path\n", .{});
 }
